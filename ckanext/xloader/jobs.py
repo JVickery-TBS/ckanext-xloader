@@ -271,7 +271,8 @@ def _download_resource_data(resource, data, api_key, logger):
             # changed, or something went wrong and we want a clean start.
             # Either way, we don't want a cached file.
             download_url = url_parts._replace(
-                query='{}&nonce={}'.format(url_parts.query, time.time())
+                query='{}&nonce={}'.format(url_parts.query, time.time()),
+                netloc=config.get('ckanext.xloader.download_base_uri', url_parts.netloc)
             ).geturl()
         else:
             download_url = url
