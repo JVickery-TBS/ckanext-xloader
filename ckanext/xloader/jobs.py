@@ -305,6 +305,8 @@ def _download_resource_data(resource, data, api_key, logger):
         else:
             download_url = url
 
+        logger.info('Fetching ACTUALLY from: {0}'.format(download_url))
+
         response = get_response(download_url, headers)
 
         cl = response.headers.get('content-length')
