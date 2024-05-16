@@ -311,6 +311,8 @@ def xloader_hook(context, data_dict):
         p.toolkit.get_action('xloader_submit')(
             context, {'resource_id': res_id})
 
+    utils.send_xloader_status(task)
+
 
 @side_effect_free
 def xloader_status(context, data_dict):

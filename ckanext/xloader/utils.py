@@ -10,6 +10,12 @@ from decimal import Decimal
 
 import ckan.plugins as p
 from ckan.plugins.toolkit import config
+from ckanext.xloader.interfaces import IPipeXloader
+
+from logging import getLogger
+
+
+log = getLogger(__name__)
 
 # resource.formats accepted by ckanext-xloader. Must be lowercase here.
 DEFAULT_FORMATS = [
@@ -257,3 +263,14 @@ def datastore_resource_exists(resource_id):
     except p.toolkit.ObjectNotFound:
         return False
     return response or {'fields': []}
+
+
+def send_xloader_status(xloader_status):
+    for observer in p.PluginImplementations(IPipeXloader):
+        try:
+            observer.receive_xloader_status(xloader_status)
+        except Exception as ex:
+            log.exception(ex)
+            # We reraise all exceptions so they are obvious there
+            # is something wrong
+            raise

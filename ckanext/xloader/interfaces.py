@@ -47,3 +47,20 @@ class IXloader(Interface):
             the resource that was uploaded
         """
         pass
+
+
+class IPipeXloader(Interface):
+    """
+    Process data in a Data Pipeline.
+
+    Inherit this to subscribe to events in the Data Pipeline and be able to
+    broadcast the results for others to process next. In this way, a number of
+    IPipes can be linked up in sequence to build up a data processing pipeline.
+
+    When a resource is xloadered, it broadcasts its status in the DataStore,
+    perhaps triggering a process which notifies users of the status.
+    These processes can in turn put the resulting resource DS status into the pipeline
+    """
+
+    def receive_xloader_status(self, xloader_status):
+        pass
