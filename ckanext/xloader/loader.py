@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 import datetime
 import itertools
+from six import text_type as str, binary_type
 import os
 import os.path
 import tempfile
@@ -147,6 +148,7 @@ def load_csv(csv_filepath, resource_id, mimetype='text/csv', logger=None):
     # Get the list of rows to skip. The rows in the tabulator stream are
     # numbered starting with 1.
     skip_rows = list(range(1, header_offset + 1))
+    skip_rows.append({'type': 'preset', 'value': 'blank'})
 
     # Get the delimiter used in the file
     delimiter = stream.dialect.get('delimiter')
@@ -154,7 +156,11 @@ def load_csv(csv_filepath, resource_id, mimetype='text/csv', logger=None):
         logger.warning('Could not determine delimiter from file, use default ","')
         delimiter = ','
 
-    headers = [header.strip()[:MAX_COLUMN_LENGTH] for header in headers if header.strip()]
+    headers = [
+        header.strip()[:MAX_COLUMN_LENGTH].strip()
+        for header in headers
+        if header.strip()
+    ]
 
     # TODO worry about csv header name problems
     # e.g. duplicate names
@@ -347,12 +353,14 @@ def load_table(table_filepath, resource_id, mimetype='text/csv', logger=None):
     try:
         file_format = os.path.splitext(table_filepath)[1].strip('.')
         with UnknownEncodingStream(table_filepath, file_format, decoding_result,
+                                   skip_rows=[{'type': 'preset', 'value': 'blank'}],
                                    post_parse=[TypeConverter().convert_types]) as stream:
             header_offset, headers = headers_guess(stream.sample)
     except TabulatorException:
         try:
             file_format = mimetype.lower().split('/')[-1]
             with UnknownEncodingStream(table_filepath, file_format, decoding_result,
+                                       skip_rows=[{'type': 'preset', 'value': 'blank'}],
                                        post_parse=[TypeConverter().convert_types]) as stream:
                 header_offset, headers = headers_guess(stream.sample)
         except TabulatorException as e:
@@ -374,9 +382,12 @@ def load_table(table_filepath, resource_id, mimetype='text/csv', logger=None):
     # Get the list of rows to skip. The rows in the tabulator stream are
     # numbered starting with 1. We also want to skip the header row.
     skip_rows = list(range(1, header_offset + 2))
+    skip_rows.append({'type': 'preset', 'value': 'blank'})
 
     TYPES, TYPE_MAPPING = get_types()
-    types = type_guess(stream.sample[1:], types=TYPES, strict=True)
+    strict_guessing = p.toolkit.asbool(
+        config.get('ckanext.xloader.strict_type_guessing', True))
+    types = type_guess(stream.sample[1:], types=TYPES, strict=strict_guessing)
 
     # override with types user requested
     if existing_info:
@@ -454,12 +465,17 @@ def load_table(table_filepath, resource_id, mimetype='text/csv', logger=None):
 
 
 _TYPE_MAPPING = {
+    "<type 'str'>": 'text',
     "<type 'unicode'>": 'text',
+    "<type 'bytes'>": 'text',
     "<type 'bool'>": 'text',
     "<type 'int'>": 'numeric',
     "<type 'float'>": 'numeric',
     "<class 'decimal.Decimal'>": 'numeric',
+    "<type 'datetime.datetime'>": 'timestamp',
     "<class 'str'>": 'text',
+    "<class 'unicode'>": 'text',
+    "<class 'bytes'>": 'text',
     "<class 'bool'>": 'text',
     "<class 'int'>": 'numeric',
     "<class 'float'>": 'numeric',
@@ -468,7 +484,7 @@ _TYPE_MAPPING = {
 
 
 def get_types():
-    _TYPES = [int, bool, str, datetime.datetime, float, Decimal]
+    _TYPES = [int, bool, str, binary_type, datetime.datetime, float, Decimal]
     TYPE_MAPPING = config.get('TYPE_MAPPING', _TYPE_MAPPING)
     return _TYPES, TYPE_MAPPING
 
