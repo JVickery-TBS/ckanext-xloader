@@ -112,13 +112,13 @@ type -offers to contribute this are welcomed.
 
 Compatibility with core CKAN versions:
 
-  | CKAN version   | Compatibility                                                                                                  |
-  | -------------- | -------------------------------------------------------------------------------------------------------------- |
-  | 2.7            | no longer supported (last supported version: 0.12.2)                                                           |
-  | 2.8            | no longer supported (last supported version: 0.12.2)                                                           |
-  | 2.9            | yes (Python3) (last supported version for Python 2.7: 0.12.2)), Must: `pip install "setuptools>=44.1.0,<71"`   |
-  | 2.10           | yes                                                                                                            |
-  | 2.11           | yes                                                                                                            |
+  | CKAN version   | Compatibility                                         |
+  | -------------- |-------------------------------------------------------|
+  | 2.7            | no longer supported (last supported version: 0.12.2)  |
+  | 2.8            | no longer supported (last supported version: 0.12.2)  |
+  | 2.9            | no longer supported (last supported version: 1.2.x)   |
+  | 2.10           | yes                                                   |
+  | 2.11           | yes                                                   |
 
 ## Installation
 
@@ -436,6 +436,12 @@ ckanext.xloader.validation.enforce_schema = False
 Default value: `True`
 
 Controls whether or not a resource requires a Validation Schema to be present from the ckanext-validation plugin to be XLoadered.
+
+## Data Dictionary Fields
+
+#### strip_extra_white
+
+This plugin adds the `Strip Extra Leading and Trailing White Space` field to Data Dictionary fields. This controls whether or not to trim whitespace from data values prior to inserting into the database. Default for each field is `True` (it will trim whitespace).
 
 ## Developer installation
 
