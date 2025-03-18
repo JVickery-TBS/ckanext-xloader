@@ -121,16 +121,19 @@ def get_job(job_id):
 
     # Turn the result into a dictionary representation of the job.
     result_dict = {}
-    for field in list(result.keys()):
-        value = getattr(result, field)
-        if value is None:
-            result_dict[field] = value
-        elif field in ('sent_data', 'data', 'error'):
-            result_dict[field] = json.loads(value)
-        elif isinstance(value, datetime.datetime):
-            result_dict[field] = value.isoformat()
-        else:
-            result_dict[field] = six.text_type(value)
+    try:
+        for field in list(result.keys()):
+            value = getattr(result, field)
+            if value is None:
+                result_dict[field] = value
+            elif field in ('sent_data', 'data', 'error'):
+                result_dict[field] = json.loads(value)
+            elif isinstance(value, datetime.datetime):
+                result_dict[field] = value.isoformat()
+            else:
+                result_dict[field] = six.text_type(value)
+    except AttributeError:
+        return None
 
     result_dict['metadata'] = _get_metadata(job_id)
     result_dict['logs'] = _get_logs(job_id)

@@ -146,6 +146,12 @@ def xloader_submit(context, data_dict):
         logic_function="xloader_hook",
         qualified=True
     )
+    # (DEV only): internal address
+    from six.moves.urllib.parse import urlsplit
+    url_parts = urlsplit(callback_url)
+    callback_url = url_parts._replace(
+        netloc=config.get('ckanext.xloader.download_base_uri', url_parts.netloc)
+    ).geturl()
     data = {
         'api_key': utils.get_xloader_user_apitoken(),
         'job_type': 'xloader_to_datastore',
